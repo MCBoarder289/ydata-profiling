@@ -41,6 +41,11 @@ def spark_describe_1d(
         # Detect variable types from pandas dataframe (df.dtypes).
         # [new dtypes, changed using `astype` function are now considered]
 
+        # TODO: Check if values are all null/nan, if so, mark them as unsupported in the vtype
+
+        # if series.dtypes[0][1] in ("int", "float", "bigint", "double"):
+        #     all_null = series.select(series.columns[0])
+
         if str(series.schema[0].dataType).startswith("ArrayType"):
             dtype = "ArrayType"
         elif str(series.schema[0].dataType).startswith("Decimal"):

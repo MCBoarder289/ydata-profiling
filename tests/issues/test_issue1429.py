@@ -4,6 +4,7 @@ https://github.com/ydataai/ydata-profiling/issues/1429
 """
 import numpy as np
 
+from ydata_profiling import ProfileReport
 from ydata_profiling.config import SparkSettings
 from ydata_profiling.model.spark.describe_numeric_spark import numeric_stats_spark, describe_numeric_1d_spark
 from ydata_profiling.model.spark.describe_counts_spark import describe_counts_spark
@@ -21,24 +22,25 @@ def create_test_df(spark: SparkSession) -> DataFrame:
             T.StructField("int", T.IntegerType(), True),
             T.StructField("boolean", T.BooleanType(), True),
             T.StructField("null_double", T.DoubleType(), True),
+            T.StructField("null_string", T.StringType(), True),
         ]
     )
 
     data = [
-        (f"test_{num + 1}", float(num), int(num), True, None) for num in range(205)
+        (f"test_{num + 1}", float(num), int(num), True, None, None) for num in range(205)
     ]
 
     # Adding dupes
     data.extend(
         [
-            ("test_1", float(1), int(1), False, None) for _ in range(205)
+            ("test_1", float(1), int(1), False, None, None) for _ in range(205)
         ]
     )
 
     # Adding nulls
     data.extend(
         [
-            (None, None, None, None, None) for _ in range(100)
+            (None, None, None, None, None, None) for _ in range(100)
         ]
     )
 
@@ -71,6 +73,14 @@ def test_describe_numeric_1d_spark_for_null_column_edge_case(spark_session, test
     assert summary["cv"] is np.nan
     assert summary["mean"] is None
     assert summary["histogram"] == []
+
+    profile = ProfileReport(test_df, title="1429_edge_case.html", config=config)
+
+    output_file = test_output_dir / "1429_edge_case.html"
+
+    profile.to_file(output_file)
+
+    assert output_file.exists()
 
 
 def test_describe_counts_spark(spark_session):
